@@ -31,7 +31,7 @@ jobs:
 
       - name: Fetch image and prepare site files
         run: |
-          python scripts/fetch_and_build.py
+          python scripts/main.py
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
