@@ -61,7 +61,8 @@ def build_today_paths():
     dd = today.strftime("%d")
     folder = os.path.join(PUBLIC_DIR, yyyy, mm)
     filename = f"{dd}.jpg"
-    return folder, os.path.join(folder, filename), os.path.join(PUBLIC_DIR, "latest.jpg")
+    dated_rel_path = os.path.join(yyyy, mm, filename)  # GitHub Pages 기준 상대 경로
+    return folder, os.path.join(folder, filename), os.path.join(PUBLIC_DIR, "latest.jpg"), dated_rel_path
 
 def send_chat(image_url: str):
     title = datetime.now().strftime("%Y년 %m월 %d일 오늘의 메뉴")
@@ -91,27 +92,29 @@ def main():
     img = fetch_og_image(URL)
     img = safe_upgrade(img)
 
-    folder, today_path, latest_path = build_today_paths()
+    folder, today_path, latest_path, dated_rel_path = build_today_paths()
     download_image(img, today_path)
 
+    # latest.jpg는 계속 유지(다른 용도), 단 Chat 전송에는 날짜 경로 사용
     os.makedirs(PUBLIC_DIR, exist_ok=True)
     try:
         if os.path.exists(latest_path):
             os.remove(latest_path)
     except Exception:
         pass
-
     with open(today_path, "rb") as src, open(latest_path, "wb") as dst:
         dst.write(src.read())
 
     owner = os.getenv("GITHUB_REPOSITORY", "owner/repo").split("/")[0]
     repo = os.getenv("GITHUB_REPOSITORY", "owner/repo").split("/")[1]
     pages_base = f"https://{owner}.github.io/{repo}"
-    image_url = f"{pages_base}/latest.jpg"
 
-    # 4) Google Chat에 전송
-    send_chat(image_url)
-    print("Posted image via GitHub Pages URL:", image_url)
+    # ✅ Google Chat에는 날짜 기반 고유 URL을 사용
+    dated_image_url = f"{pages_base}/{dated_rel_path.replace(os.sep, '/')}"
+    send_chat(dated_image_url)
+
+    print("Posted image via GitHub Pages URL:", dated_image_url)
+    print("latest also updated (not used for Chat):", f"{pages_base}/latest.jpg")
 
 if __name__ == "__main__":
     main()
