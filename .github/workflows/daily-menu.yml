@@ -2,7 +2,7 @@ name: Daily Menu to Google Chat
 
 on:
   schedule:
-    - cron: "30 0 * * 1-5" # UTC 시간대이고, cron Queue를 고려하여 00:30으로 지정
+    - cron: "10 1 * * 1-5" # UTC 시간대이고, cron Queue를 고려하여 01:10으로 지정
   workflow_dispatch:
 
 permissions:
